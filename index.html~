@@ -35,7 +35,7 @@
       if (url && url.length > 1) {
         url = decodeURIComponent(url[1]);
       } else {
-        url = "https://raw.githubusercontent.com/dgrechka/FetchClimateAPI/master/API.yaml";
+        url = "https://raw.githubusercontent.com/dgrechka/FetchClimateAPI/gh-pages/API.yaml";
       }
 
       // Pre load translate...
