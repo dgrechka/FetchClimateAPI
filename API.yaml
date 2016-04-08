@@ -11,7 +11,7 @@ tags:
   - name: Operator
     description: Service health and status
   - name: Regular user
-    description: Getting available data info and fetching the data
+    description: Getting info about published data and fetching the data
 schemes:
   - http
 
@@ -20,7 +20,7 @@ paths:
     get:
       tags:
         - Operator
-      description: Retreives the current service load status.
+      description: Retrieves the current service load status.
         The count of currently processing queries. The count of queries in queue.
       produces:
        - application/xml
@@ -42,7 +42,75 @@ paths:
                     type: integer
                   pendingRequests:
                     type: integer
-            
+  /api/configuration:
+    get:
+      tags:
+       - Regular user
+      description: Retrieves the available data sets and variables
+      produces:
+        - application/json
+      parameters:
+        - name: timestamp
+          in: query
+          description: A timestemp in ISO 8601 format (e.g. "2016-01-01T12:00:00Z") that describes time for which to retrieve the effective configuration
+          required: false
+          type: string
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Service configuration snapshot
+            type: object
+            properties:
+              FetchConfiguration:
+                type: object
+                properties:
+                  DataSources:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        DataSourceDefinition:
+                          type: object
+                          properties:
+                            Copyright:
+                              type: string
+                              description: A copyright notice about the data set
+                            Description:
+                              type: string
+                              description: Full textural description of the data set
+                            ID:
+                              type: integer
+                              description: Unique numeric identifier (within current FC instance) of the data set. Used in the provenance reports
+                            Name:
+                              type: string
+                              description: Short unique string identifier (within current FC instance) of the data set
+                            ProvidedVariables:
+                              type: array
+                              items:
+                                type: string
+                                description: identifier of the variable
+                  EnvironmentalVariables:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Description:
+                          type: string
+                          description: Full textural description of the variable
+                        Name:
+                          type: string
+                          description: Short unique identifier of the variable
+                        Units:
+                          type: string
+                          description: A description of units in which the values for this variable are returned
+                  TimeStamp:
+                    type: string
+                    description: A timestamp in ISO 8601 format (e.g. "2016-01-01T12:00:00Z") that describes time for which the configuration corresponds
+        400:
+          description: |
+            Bad request.  
+            Commonly happens due to too early timestamp. e.g. timestamp before the service was deployed and configured
   /logs:
     get:
       tags:
@@ -55,7 +123,7 @@ paths:
       parameters:
         - name: format
           in: query
-          description: The format of data to extract
+          description: The format of data to extract. Can be only "csv" or "html" for now. Default is "html"
           required: false
           type: string
         - name: days
@@ -65,9 +133,12 @@ paths:
           type: integer
           minimum:  1
           maximum:  365
-      # Expected responses for this operation:
+        - name: hash
+          in: query
+          description: Retrieve only messages related to specified query hash
+          required: false
+          type: string
       responses:
-        # Response code
         200:
           description: Successful response
           schema:
