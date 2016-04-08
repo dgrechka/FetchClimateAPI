@@ -4,15 +4,22 @@ info:
   title: FetchClimate API
   description: Fetching service configuration, operation logs and quering the data
   contact:
-    name: Developper
+    name: Dmitry A. Grechka
     email: dmitryg@itis.cs.msu.ru
 host: fc.dgrechka.net
+tags:
+  - name: Operator
+    description: Service health and status
+  - name: Regular user
+    description: Getting available data info and fetching the data
 schemes:
   - http
 
 paths:
   /api/status:
     get:
+      tags:
+        - Operator
       description: Retreives the current service load status.
         The count of currently processing queries. The count of queries in queue.
       produces:
@@ -38,6 +45,8 @@ paths:
             
   /logs:
     get:
+      tags:
+        - Operator
       description: |
         Gets logs messages of service operation
       produces:
