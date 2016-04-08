@@ -20,6 +20,7 @@ paths:
     get:
       tags:
         - Operator
+        - Regular user
       description: Retrieves the current service load status.
         The count of currently processing queries. The count of queries in queue.
       produces:
@@ -111,6 +112,26 @@ paths:
           description: |
             Bad request.  
             Commonly happens due to too early timestamp. e.g. timestamp before the service was deployed and configured
+  /api/compute:
+    post:
+      tags:
+        - Regular user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: To be descripbed...
+  /jsproxy/data:
+    get:
+      tags:
+        - Regular user
+      produces:
+        - application/json
+      responses:
+        200:
+          description: To be descripbed...
   /logs:
     get:
       tags:
