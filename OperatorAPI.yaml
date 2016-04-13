@@ -1,0 +1,76 @@
+swagger: '2.0'
+info:
+  version: "1.0.0"
+  title: FetchClimate API
+  description: Fetching service configuration, operation logs and quering the data
+  contact:
+    name: Dmitry A. Grechka
+    email: dmitryg@itis.cs.msu.ru
+host: fc.dgrechka.net
+tags:
+  - name: Operator
+    description: Service health and status
+schemes:
+  - http
+
+paths:
+  /api/status:
+    get:
+      tags:
+        - Operator
+      description: Retrieves the current service load status.
+        The count of currently processing queries. The count of queries in queue.
+      produces:
+       - application/xml
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Load of the service
+            type: object
+            properties:
+              SystemStatus:
+                type: object
+                properties:
+                  activeParts:
+                    type: integer
+                  activeRequests:
+                    type: integer
+                  pendingParts:
+                    type: integer
+                  pendingRequests:
+                    type: integer
+  /logs:
+    get:
+      tags:
+        - Operator
+      description: |
+        Gets logs messages of service operation
+      produces:
+        - text/html
+        - text/plain
+      parameters:
+        - name: format
+          in: query
+          description: The format of data to extract. Can be only "csv" or "html" for now. Default is "html"
+          required: false
+          type: string
+        - name: days
+          in: query
+          description: For how many days since now the logs are extracted
+          required: false
+          type: integer
+          minimum:  1
+          maximum:  365
+        - name: hash
+          in: query
+          description: Retrieve only messages related to specified query hash
+          required: false
+          type: string
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: HTML/CSV content with operation logs
+            type: string
+    

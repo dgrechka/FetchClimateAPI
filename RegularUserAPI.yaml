@@ -8,18 +8,14 @@ info:
     email: dmitryg@itis.cs.msu.ru
 host: fc.dgrechka.net
 tags:
-  - name: Operator
-    description: Service health and status
   - name: Regular user
     description: Getting info about published data and fetching the data
 schemes:
   - http
-
 paths:
   /api/status:
     get:
       tags:
-        - Operator
         - Regular user
       description: Retrieves the current service load status.
         The count of currently processing queries. The count of queries in queue.
@@ -132,37 +128,4 @@ paths:
       responses:
         200:
           description: To be descripbed...
-  /logs:
-    get:
-      tags:
-        - Operator
-      description: |
-        Gets logs messages of service operation
-      produces:
-        - text/html
-        - text/plain
-      parameters:
-        - name: format
-          in: query
-          description: The format of data to extract. Can be only "csv" or "html" for now. Default is "html"
-          required: false
-          type: string
-        - name: days
-          in: query
-          description: For how many days since now the logs are extracted
-          required: false
-          type: integer
-          minimum:  1
-          maximum:  365
-        - name: hash
-          in: query
-          description: Retrieve only messages related to specified query hash
-          required: false
-          type: string
-      responses:
-        200:
-          description: Successful response
-          schema:
-            title: HTML/CSV content with operation logs
-            type: string
     
