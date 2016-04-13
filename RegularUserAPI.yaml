@@ -26,6 +26,7 @@ paths:
          type: string
       produces:
        - application/xml
+       - application/json
       responses:
         200:
           description: Successful response
@@ -50,7 +51,8 @@ paths:
        - Regular user
       description: Retrieves the available data sets and variables
       produces:
-        - application/json
+       - application/xml
+       - application/json
       parameters:
         - name: timestamp
           in: query
@@ -117,6 +119,7 @@ paths:
     post:
       tags:
         - Regular user
+      description: Submits a query for processing
       consumes:
         - application/json
       produces:
@@ -124,13 +127,122 @@ paths:
       responses:
         200:
           description: To be descripbed...
+  /jsproxy/schema:
+    get:
+      tags:
+        - Regular user
+      description: |
+        Extracts the schema of the Dmitrov data set.
+        See http://research.microsoft.com/en-us/um/cambridge/groups/science/tools/dmitrov/ for more info about Dmitrov.
+      produces:
+        - application/json
+        - application/xml
+      parameters:
+       - name: uri
+         in: query
+         required: true
+         type: string
+         description: Dmitrov URI to get schema for.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Full data set schema 
+            type: object
+            properties:
+              SerializableDataSetSchema:
+                type: object
+                description: Container object
+                properties:
+                  Dimensions:
+                    title: Dimension space of the data set
+                    type: array
+                    items:
+                      $ref: '#/definitions/DataSetDimension'
+                  Metadata:
+                    title: whole data set wide metadata entries
+                    type: array
+                    items:
+                      $ref: '#/definitions/MetaDataEntry'
+                  Variables:
+                    title: data variables
+                    type: array
+                    items:
+                      xml:
+                        name: SerializableVariableSchema
+                      title: single variable definition
+                      type: object
+                      properties:
+                        Dimensions:
+                          title: dimensions on which the variable is defined
+                          type: array
+                          items:
+                            title: dimension name
+                            type: string
+                        Metadata:
+                          title: varaible metadata entries
+                          type: array
+                          items:
+                            $ref: '#/definitions/MetaDataEntry'
+                        Name:
+                          type: string
+                          title: textural identifier of the variable
+                        Size:
+                          type: integer
+                          title: Size (in bytes) of single variable element
+                        TypeString:
+                          type: string
+                          title: .NET type identifier
+        500:
+          description: Schema extraction failure
   /jsproxy/data:
     get:
       tags:
         - Regular user
+      description: |
+        Proxy that converts Dmitrov Data sets to JSON. Can be used to extract query results.
+        See http://research.microsoft.com/en-us/um/cambridge/groups/science/tools/dmitrov/ for more info about Dmitrov.
       produces:
         - application/json
+      parameters:
+       - name: uri
+         in: query
+         required: true
+         type: string
+         description: Dmitrov URI to get data from.
+       - name: variables
+         in: query
+         required: true
+         type: string
+         description: Comma separated list of variables to extract
       responses:
         200:
           description: To be descripbed...
-    
+definitions:
+  DataSetDimension:
+    title: Single dimension definition
+    type: object
+    xml:
+      name: SerializableDimension
+    properties:
+      Length:
+        type: integer
+      Name:
+        title: string identifier of the dimension
+        type: string
+  MetaDataEntry:
+    type: object
+    xml:
+      name: KeyValueOfstringObjectWithTypeStringNkIIWh0I
+    properties:
+      Key:
+        type: string
+      Value:
+        type: object
+        properties:
+          TypeString:
+            type: string
+            title: .NET type identifier
+          Value:
+            type: string
+            title: .NET serialized identifier
