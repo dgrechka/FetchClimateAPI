@@ -217,7 +217,16 @@ paths:
          description: Comma separated list of variables to extract
       responses:
         200:
-          description: To be descripbed...
+          description: Successful data fetching
+          schema:
+            title: Container of variable data
+            description: |
+              Each field of the object correspond to each requested variable.
+              Each field is named as requested variable.
+              Each field is N-dimentional array (presentd as jagged array). Number of diemension depends on the variable definition. See /jsproxy/schema endpoint which provides the information about variables dimensions.
+            type: object
+        500:
+          description: Data fetching failure
 definitions:
   DataSetDimension:
     title: Single dimension definition
