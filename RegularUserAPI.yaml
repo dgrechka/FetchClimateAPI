@@ -6,7 +6,7 @@ info:
   contact:
     name: Dmitry A. Grechka
     email: dmitryg@itis.cs.msu.ru
-host: fc.dgrechka.net
+host: fc.itis.cs.msu.ru
 tags:
   - name: Regular user
     description: Getting info about published data and fetching the data
@@ -31,20 +31,8 @@ paths:
         200:
           description: Successful response
           schema:
-            title: Query status string
-            type: string
-            description: |
-              The following variables can be found in format section:
-              {result_url} - the url to download JSON serialized query result
-              {error_message} - textural description of the error
-              {percentage} - the progress indicator
-              {query_hash} - replicates the hash specified in the parameters
-              {position_in_queue} - how many queries are in the queue before the current
-            format: |
-              'completed={result_url}' : query successfuly processed. You can download results
-              'fault={error_message}' : error occurred during query proccesing
-              'progress={percentage}%; hash={query_hash}' : query is currently processed
-              'pending={position_in_queue}; hash={query_hash}' : query is in queue to be processed
+            $ref: '#/definitions/QueryStatus'
+            
   /api/configuration:
     get:
       tags:
@@ -124,9 +112,79 @@ paths:
         - application/json
       produces:
         - application/json
+      parameters:
+        - name: content
+          in: body
+          required: true
+          description: Specification of the fetch
+          schema:
+            type: object
+            properties:
+              EnvironmentVariableName:
+                type: string
+                title: textural identifier of the variable to fetch
+              ReproducibilityTimestamp:
+                type: integer
+                title: UNIX time for which reproduce the result. can be 253404979199999 which idicates most recent service configuration
+              ParticularDataSources:
+                title: permeted sources of data
+                description: can be empty. This indicates that all available datasets can be used
+                type: array
+                items:
+                  title: Dataset textural identifier
+                  type: string
+              Domain:
+                title: Spatial and temporal specifications for data to fetch
+                type: object
+                properties:
+                  SpatialRegionType:
+                    type: string
+                    format: Can be one of the 'CellGrid','PointGrid','Points','Cells'
+                    description: |
+                      'Points' indicate that Lats,Lats2,Lons,Lons2 fields describe point set.
+                  Lats:
+                    $ref: '#/definitions/LatLonSpatArray'
+                  Lats2:
+                    $ref: '#/definitions/Lat2Lon2SpatArray'
+                  Lon:
+                    $ref: '#/definitions/LatLonSpatArray'
+                  Lon2:
+                    $ref: '#/definitions/Lat2Lon2SpatArray'
+                  Mask:
+                    type: object
+                    title: |
+                      A boolean array that matches dimensions of returned data array.
+                      'true' values indicate that in these position data must be computed.
+                      'false' indicate that in these positions the computaion can not be performed, the returned data values in these poitions can be arbitrary.
+                      Can be null. null indicates that all values are needed, nothing can be omitted
+                  TimeRegion:
+                    type: object
+                    title: Temporal specification
+                    properties:
+                      IsIntervalsGridDays:
+                        type: boolean
+                      IsIntervalsGridHours:
+                        type: boolean
+                      IsIntervalsGridYears:
+                        type: boolean
+                      Years:
+                        type: array
+                        items:
+                          type: integer
+                      Days:
+                        type: array
+                        items:
+                          type: integer
+                      Hours:
+                        type: array
+                        items:
+                          type: integer
+                      
       responses:
         200:
-          description: To be descripbed...
+          description: Successful response
+          schema:
+            $ref: '#/definitions/QueryStatus'
   /jsproxy/schema:
     get:
       tags:
@@ -228,6 +286,41 @@ paths:
         500:
           description: Data fetching failure
 definitions:
+  LatLonSpatArray:
+    type: array
+    title: Part of spatial region specification.
+    description: |
+      The semantics depends on SpatialRegionType field value
+      if SpatialRegionType='Points', Lats and Lons fields contain arrays that describe the requested point set. The arrays lengths are equal. Their length is equal to the number of points in the point set.
+      if SpatialRegionType='PintGrid', Lats and Lons fields describe grid. Lats array describes latitudes of grid nodes, Lons array describe longitudes of grid nodes. For each grid node the value will be fetched. There will be Length(Lats)xLength(Lons) values fetched.
+      if SpatialRegionType='CellGrid', to be described...
+      if SpatialRegionType='Cells', to be described...
+    items:
+      type: number
+  Lat2Lon2SpatArray:
+    type: array
+    title: Part of spatial region specification.
+    description: |
+      The semantics depends on SpatialRegionType field value
+      if SpatialRegionType='Points' or  SpatialRegionType='Grid' or  SpatialRegionType='PointGrid'. Lat2 and Lon2 fields must be null.
+      if SpatialRegionType='CellGrid', to be described...
+    items:
+      type: number
+  QueryStatus:
+    title: Query status string
+    type: string
+    description: |
+      The following variables can be found in format section:
+      {result_url} - the Dmitrov dataset URL. You can pass it to /jsproxy/schema, /jsproxy/data endpoints to obtain the data in JSON
+      {error_message} - textural description of the error
+      {percentage} - the progress indicator
+      {query_hash} - replicates the hash specified in the parameters
+      {position_in_queue} - how many queries are in the queue before the current
+    format: |
+      'completed={result_url}' : query successfuly processed. You can download results via /jsproxy/schema, /jsproxy/data endpoints
+      'fault={error_message}' : error occurred during query proccesing
+      'progress={percentage}%; hash={query_hash}' : query is currently processed
+      'pending={position_in_queue}; hash={query_hash}' : query is in queue to be processed
   DataSetDimension:
     title: Single dimension definition
     type: object

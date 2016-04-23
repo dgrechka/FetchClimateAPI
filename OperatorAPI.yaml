@@ -6,7 +6,7 @@ info:
   contact:
     name: Dmitry A. Grechka
     email: dmitryg@itis.cs.msu.ru
-host: fc.dgrechka.net
+host: fc.itis.cs.msu.ru
 tags:
   - name: Operator
     description: Service health and status
