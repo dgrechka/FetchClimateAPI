@@ -6,7 +6,7 @@ info:
   contact:
     name: Dmitry A. Grechka
     email: dmitryg@itis.cs.msu.ru
-host: fc.dgrechka.net
+host: fc.itis.cs.msu.ru
 tags:
   - name: Regular user
     description: Getting info about published data and fetching the data
@@ -31,20 +31,8 @@ paths:
         200:
           description: Successful response
           schema:
-            title: Query status string
-            type: string
-            description: |
-              The following variables can be found in format section:
-              {result_url} - the url to download JSON serialized query result
-              {error_message} - textural description of the error
-              {percentage} - the progress indicator
-              {query_hash} - replicates the hash specified in the parameters
-              {position_in_queue} - how many queries are in the queue before the current
-            format: |
-              'completed={result_url}' : query successfuly processed. You can download results
-              'fault={error_message}' : error occurred during query proccesing
-              'progress={percentage}%; hash={query_hash}' : query is currently processed
-              'pending={position_in_queue}; hash={query_hash}' : query is in queue to be processed
+            $ref: '#/definitions/QueryStatus'
+            
   /api/configuration:
     get:
       tags:
@@ -124,9 +112,131 @@ paths:
         - application/json
       produces:
         - application/json
+      parameters:
+        - name: Data query
+          in: body
+          required: true
+          description: Specification of the fetch
+          schema:
+            type: object
+            properties:
+              EnvironmentVariableName:
+                type: string
+                title: textural identifier of the variable to fetch
+              ReproducibilityTimestamp:
+                type: integer
+                title: UNIX time for which reproduce the result. can be 253404979199999 which idicates most recent service configuration
+              ParticularDataSources:
+                title: permeted sources of data
+                description: can be empty. This indicates that all available datasets can be used
+                type: array
+                items:
+                  title: Dataset textural identifier
+                  type: string
+              Domain:
+                title: Spatial and temporal specifications for data to fetch
+                type: object
+                properties:
+                  SpatialRegionType:
+                    type: string
+                    enum:
+                      - CellGrid
+                      - PointGrid
+                      - Points
+                      - Cells
+                    description: |
+                      'Points' indicates that Lats,Lats2,Lons,Lons2 fields describe point set.
+                      'Cells' indicates that Lats,Lats2,Lons,Lons2 fields describe cells (rectangles) set.
+                      'PointGrid' indicates that Lats,Lats2,Lons,Lons2 fields describe rectangular grid of points.
+                      'CellGrid' indicates that Lats,Lats2,Lons,Lons2 fields describe rectangular grid of cells (rectangles formed by grid nodes).
+                  Lats:
+                    title: Latitudes array
+                    type: array
+                    items:
+                      type: number
+                      format: float
+                    description: |
+                      if SpatialRegionType='Points' then Lats and Lons fields contain arrays that describe the requested point set. The arrays lengths are equal. Their length is equal to the number of points in the point set.
+                      if SpatialRegionType='PintGrid' then Lats and Lons fields describe grid. Lats array describes latitudes of grid nodes, Lons array describe longitudes of grid nodes. For each grid node the value will be fetched. There will be Length(Lats)xLength(Lons) values fetched.
+                      if SpatialRegionType='CellGrid' then Lats and Lons fields describe grid. Lats array describes latitudes of grid nodes, Lons array describe longitudes of grid nodes. Grid nodes form rectangular areas between them. These areas are called cells. For each grid cell the mean value is fetched. There will be (Length(Lats)-1)x(Length(Lons)-3) values fetched.
+                      if SpatialRegionType='Cells' then Lats, Lons, Lats2,Lons2 fields contain arrays that describe the requested cells (rectangular areas) set. All four arrays lengths are equal. Their length is equal to the number of cells in the cell set. Each cell is defined as rectangle with latitudes between lat[i] and lat2[i], longitudes between lon[i] and lon2[i].
+                  Lon:
+                    title: Longitudes array
+                    type: array
+                    items:
+                      type: number
+                      format: float
+                    description: |
+                      if SpatialRegionType='Points' then Lats and Lons fields contain arrays that describe the requested point set. The arrays lengths are equal. Their length is equal to the number of points in the point set.
+                      if SpatialRegionType='PintGrid' then Lats and Lons fields describe grid. Lats array describes latitudes of grid nodes, Lons array describe longitudes of grid nodes. For each grid node the value will be fetched. There will be Length(Lats)xLength(Lons) values fetched.
+                      if SpatialRegionType='CellGrid' then Lats and Lons fields describe grid. Lats array describes latitudes of grid nodes, Lons array describe longitudes of grid nodes. Grid nodes form rectangular areas between them. These areas are called cells. For each grid cell the mean value is fetched. There will be (Length(Lats)-1)x(Length(Lons)-3) values fetched.
+                      if SpatialRegionType='Cells' then Lats, Lons, Lats2,Lons2 fields contain arrays that describe the requested cells (rectangular areas) set. All four arrays lengths are equal. Their length is equal to the number of cells in the cell set. Each cell is defined as rectangle with latitudes between lat[i] and lat2[i], longitudes between lon[i] and lon2[i].
+                  Lats2:
+                    type: array
+                    items:
+                      type: number
+                      format: float
+                    description: |
+                      Valid only for SpatialRegionType='Cells', must be null otherwise
+                      This field is considered only if SpatialRegionType='CellGrid', ignored otherwise, can be null.
+                      if SpatialRegionType='Cells' then Lats, Lons, Lats2,Lons2 fields contain arrays that describe the requested cells (rectangular areas) set. All four arrays lengths are equal. Their length is equal to the number of cells in the cell set. Each cell is defined as rectangle with latitudes between lat[i] and lat2[i], longitudes between lon[i] and lon2[i].
+                  Lon2:
+                    type: array
+                    items:
+                      type: number
+                      format: float
+                    description: |
+                      Valid only for SpatialRegionType='Cells', must be null otherwise
+                      if SpatialRegionType='Cells' then Lats, Lons, Lats2, Lons2 fields contain arrays that describe the requested cells (rectangular areas) set. All four arrays lengths are equal. Their length is equal to the number of cells in the cell set. Each cell is defined as rectangle with latitudes between lat[i] and lat2[i], longitudes between lon[i] and lon2[i].
+                  Mask:
+                    title: Computation mask
+                    type:
+                      - object
+                    description: |
+                      A boolean array that matches dimensions of data array to be returned.
+                      'true' values indicate that in these position data must be computed.
+                      'false' indicate that in these positions the computaion can not be performed, the returned data values in these poitions can be arbitrary.
+                      Can be null. null indicates that all values are needed, nothing can be omitted
+                  TimeRegion:
+                    type: object
+                    title: Temporal specification
+                    properties:
+                      IsIntervalsGridDays:
+                        type: boolean
+                        default: true
+                        description: |
+                          Controls how Days property transfors into days within each year series dimension. Consider Days = [1,11,21]. Setting IsIntervalsGridDays to true describes the exclusive intervals between day numbers. e.g. [1,10],[11,20] within each requested year; setting IsIntervalsGridDays to false describes individual day numbers. e.g. [1],[11],[21] within each requested year.
+                      IsIntervalsGridHours:
+                        type: boolean
+                        default: true
+                        description: |
+                          Controls how Hours property transfors into hours within each day series dimension. Consider Hours = [0,6,12,18,24]. Setting IsIntervalsGridHours to true describes the inclusive intervals between hours. e.g. [0,6],[6,12],[12,18],[18,24] within each requested day; setting IsIntervalsGridHours to false describes individual time moments. e.g. [0],[6],[12],[18],[24] within each requested day.
+                      IsIntervalsGridYears:
+                        type: boolean
+                        default: true
+                        description: |
+                          Controls how Years property transfors into years dimension. Consider Hours = [1961,1971,1981]. Setting IsIntervalsGridYears to true describes the inclusive intervals between years specified. e.g. [1961,1970],[1971,1980]; setting IsIntervalsGridYears to false describes individual years. e.g. [1961],[1971],[1981].
+                      Years:
+                        type: array
+                        description: An array to form Years dimension. See the rule for forming the Years dimension in IsIntervalsGridYears description.
+                        items:
+                          type: integer
+                      Days:
+                        type: array
+                        description: An array to form Days dimension. See the rule for forming the Days dimension in IsIntervalsGridDays description.
+                        items:
+                          type: integer
+                      Hours:
+                        type: array
+                        description: An array to form Hours dimension. See the rule for forming the Hours dimension in IsIntervalsGridHours description.
+                        items:
+                          type: integer
+                      
       responses:
         200:
-          description: To be descripbed...
+          description: Successful response
+          schema:
+            $ref: '#/definitions/QueryStatus'
   /jsproxy/schema:
     get:
       tags:
@@ -228,6 +338,21 @@ paths:
         500:
           description: Data fetching failure
 definitions:
+  QueryStatus:
+    title: Query status string
+    type: string
+    description: |
+      The following variables can be found in format section:
+      {result_url} - the Dmitrov dataset URL. You can pass it to /jsproxy/schema, /jsproxy/data endpoints to obtain the data in JSON
+      {error_message} - textural description of the error
+      {percentage} - the progress indicator
+      {query_hash} - replicates the hash specified in the parameters
+      {position_in_queue} - how many queries are in the queue before the current
+    format: |
+      'completed={result_url}' : query successfuly processed. You can download results via /jsproxy/schema, /jsproxy/data endpoints
+      'fault={error_message}' : error occurred during query proccesing
+      'progress={percentage}%; hash={query_hash}' : query is currently processed
+      'pending={position_in_queue}; hash={query_hash}' : query is in queue to be processed
   DataSetDimension:
     title: Single dimension definition
     type: object
