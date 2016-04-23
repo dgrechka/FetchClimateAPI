@@ -160,7 +160,7 @@ paths:
                       if SpatialRegionType='PintGrid' then Lats and Lons fields describe grid. Lats array describes latitudes of grid nodes, Lons array describe longitudes of grid nodes. For each grid node the value will be fetched. There will be Length(Lats)xLength(Lons) values fetched.
                       if SpatialRegionType='CellGrid' then Lats and Lons fields describe grid. Lats array describes latitudes of grid nodes, Lons array describe longitudes of grid nodes. Grid nodes form rectangular areas between them. These areas are called cells. For each grid cell the mean value is fetched. There will be (Length(Lats)-1)x(Length(Lons)-3) values fetched.
                       if SpatialRegionType='Cells' then Lats, Lons, Lats2,Lons2 fields contain arrays that describe the requested cells (rectangular areas) set. All four arrays lengths are equal. Their length is equal to the number of cells in the cell set. Each cell is defined as rectangle with latitudes between lat[i] and lat2[i], longitudes between lon[i] and lon2[i].
-                  Lon:
+                  Lons:
                     title: Longitudes array
                     type: array
                     items:
