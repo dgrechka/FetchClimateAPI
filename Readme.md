@@ -18,3 +18,7 @@ The following code examples show how to write clients for FetchClimate serivce b
   * [Python](https://gist.github.com/vassilyl/ee9dbf136a82eddfe243b40508265ec0)
   * [R](https://github.com/dgrechka/RFc)
   * [JavaScipt](http://jsfiddle.net/sergey77/swePD/)
+
+
+#### Typical usage call sequence
+[![Sequence diagram](http://dgrechka.github.io/FetchClimateAPI/images/typical_fetch_sequence.png)](http://creately.com/diagram/inljda7n1/qBlmVJ58XxKbr3XJh4yZlc00SA%3D)
