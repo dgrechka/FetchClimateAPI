@@ -16,8 +16,8 @@ Current specification is: ![Is spec valid](http://dgrechka.net/swagger_validator
 The following code examples show how to write clients for FetchClimate serivce by following the specification above:
 
   * [Python](https://gist.github.com/vassilyl/ee9dbf136a82eddfe243b40508265ec0)
-  * [R](https://github.com/dgrechka/RFc)
-  * [JavaScipt](http://jsfiddle.net/sergey77/swePD/)
+  * [R](https://gist.github.com/Pakillo/df07cd13a577f2a7d03657eaaf81512f#file-rfetchclimate-md) using [RFc package](https://github.com/dgrechka/RFc)
+  * [JavaScipt](http://jsfiddle.net/sergey77/swePD/) using [FC JavaScript library](http://fc.itis.cs.msu.ru/scripts/request.js)
 
 
 #### Typical usage call sequence
